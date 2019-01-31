@@ -4,7 +4,6 @@ const isAuthenticated = async (resolve, parent, args, ctx, info) => {
   if (!ctx.user) {
     throw new AuthenticationError('must authenticate');
   }
-  console.log(ctx.user);
 
   if (!(await ctx.models.User.findById(ctx.user))) {
     throw new ApolloError('User not found', 'USER_NOT_FOUND');

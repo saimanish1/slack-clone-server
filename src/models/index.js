@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize('test', 'root', 'mysql', {
-  host: 'localhost',
+const sequelize = new Sequelize('slackclone', 'manish', 'pass', {
+  host: process.env.DB_HOST || 'localhost',
   dialect: 'mysql',
   pool: {
     max: 5,

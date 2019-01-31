@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start": "nodemon src/server.js",
-    "build": "babel src --out-dir dist --watch --source-maps"
+    "build": "node src/server.js"
   },
   "dependencies": {
     "@babel/cli": "^7.2.0",
@@ -30,8 +30,9 @@
     "graphql": "^14.0.2",
     "graphql-middleware": "^3.0.0",
     "graphql-shield": "^5.1.0",
+    "graphql-subscriptions": "^1.0.0",
     "graphql-tools": "^4.0.3",
-    "graphql-yoga": "^1.16.9",
+    "graphql-yoga": "^1.17.0",
     "jsonwebtoken": "^8.4.0",
     "merge-graphql-schemas": "^1.5.8",
     "mysql2": "^1.6.4",

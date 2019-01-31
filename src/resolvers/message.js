@@ -7,13 +7,13 @@ const fs = require('fs');
 
 const storeFS = ({ stream, filename }) => {
   const id = shortid.generate();
-  const url = `images/${id}-${filename}`;
+  const url = `files/${id}-${filename}`;
   return new Promise((resolve, reject) =>
     stream
       .on('error', error => {
         if (stream.truncated)
           // Delete the truncated file.
-          fs.unlinkSync(path);
+          fs.unlinkSync(url);
         reject(error);
       })
       .pipe(fs.createWriteStream(url))
@@ -43,7 +43,9 @@ module.exports = {
           messageData.url = url;
           messageData.filetype = filetype;
         }
-
+        if (!messageData.filetype) {
+          messageData.filetype = 'text/plain';
+        }
         const message = await models.Message.create({ ...args, userId: user });
         pubsub.publish(NEW_CHANNEL_MESSAGE, {
           newChannelMessage: message.dataValues,

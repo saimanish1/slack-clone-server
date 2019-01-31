@@ -1,0 +1,33 @@
+version: '3.1'
+volumes:
+  mysql:
+services:
+
+  db:
+    image: mysql
+    volumes:
+      - "mysql:/var/lib/mysql"
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: slackclone
+      MYSQL_USER: manish
+      MYSQL_PASSWORD: pass
+    ports:
+      - 3306:3306
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      SECRET: "SECRET"
+      SECRET2: "SECRET2"
+      DB_HOST: db
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+
+
+
+

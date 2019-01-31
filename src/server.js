@@ -1,11 +1,13 @@
 const {
   ApolloServer,
-  PubSub,
   ApolloError,
   AuthenticationError,
 } = require('apollo-server');
+const { PubSub } = require('graphql-subscriptions');
 const { makeExecutableSchema } = require('graphql-tools');
 const { applyMiddleware } = require('graphql-middleware');
+const express = require('express');
+const { GraphQLServer } = require('graphql-yoga');
 
 const IsAuthenticatedMiddleware = require('./middlewares/IsAuthenticatedMiddleware');
 const path = require('path');
@@ -27,17 +29,18 @@ const resolvers = mergeResolvers(
 
 const pubsub = new PubSub();
 
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
-});
-
-const schemaWithMiddleWare = applyMiddleware(schema, IsAuthenticatedMiddleware);
+// const schema = makeExecutableSchema({
+//
+// });
+//
+// const schemaWithMiddleWare = applyMiddleware(schema, IsAuthenticatedMiddleware);
 
 let user;
-const server = new ApolloServer({
-  schema: schemaWithMiddleWare,
-  context: async ({ req, res, connection }) => {
+const server = new GraphQLServer({
+  typeDefs,
+  resolvers,
+  middlewares: [IsAuthenticatedMiddleware],
+  context: async ({ request, response, connection }) => {
     if (connection) {
       return {
         models,
@@ -45,7 +48,7 @@ const server = new ApolloServer({
         user: connection.context.validUser,
       };
     } else {
-      user = (await getUser(req, res)) || null;
+      user = (await getUser(request, response)) || null;
       return {
         user,
         models,
@@ -53,31 +56,35 @@ const server = new ApolloServer({
       };
     }
   },
-
-  subscriptions: {
-    onConnect: async ({ token }, webSocket) => {
-      const user = await validateToken(token);
-      if (!user) {
-        throw new ApolloError('Token not found');
-      }
-      const validUser = await models.User.findOne({
-        where: { id: user },
-        raw: true,
-      });
-      if (!validUser) {
-        throw new AuthenticationError('Invalid User');
-      }
-      return {
-        validUser,
-      };
-    },
-  },
 });
 
+server.express.use('/files', express.static('files'));
+
 models.sequelize.sync({}).then(() => {
-  server.listen({ port: 4000 }, () => {
-    console.info(
-      `🚀 Server ready at http://localhost:4000${server.graphqlPath}`
-    );
-  });
+  server.start(
+    {
+      port: 4000,
+      subscriptions: {
+        onConnect: async ({ token }, webSocket) => {
+          const user = await validateToken(token);
+          if (!user) {
+            throw new ApolloError('Token not found');
+          }
+          const validUser = await models.User.findOne({
+            where: { id: user },
+            raw: true,
+          });
+          if (!validUser) {
+            throw new AuthenticationError('Invalid User');
+          }
+          return {
+            validUser,
+          };
+        },
+      },
+    },
+    () => {
+      console.info(`🚀 Server ready at http://localhost:4000`);
+    }
+  );
 });
