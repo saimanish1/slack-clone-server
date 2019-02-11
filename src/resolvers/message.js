@@ -5,9 +5,9 @@ const NEW_CHANNEL_MESSAGE = 'NEW_CHANNEL_MESSAGE';
 const shortid = require('shortid');
 const fs = require('fs');
 
-const storeFS = ({ stream, filename }) => {
+const storeFS = ({ stream, filename, mimetype }) => {
   const id = shortid.generate();
-  const url = `files/${id}-${filename}`;
+  const url = `files/${id}.${mimetype.slice(mimetype.indexOf('/') + 1)}`;
   return new Promise((resolve, reject) =>
     stream
       .on('error', error => {
@@ -25,7 +25,7 @@ const storeFS = ({ stream, filename }) => {
 const processUpload = async upload => {
   const { createReadStream, filename, mimetype } = await upload;
   const stream = createReadStream();
-  const { id, url } = await storeFS({ stream, filename });
+  const { id, url } = await storeFS({ stream, filename, mimetype });
   return { url, filetype: mimetype };
 };
 

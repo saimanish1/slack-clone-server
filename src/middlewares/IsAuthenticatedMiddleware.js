@@ -56,6 +56,7 @@ const newDirectMessageMiddleware = async (resolve, parent, args, ctx, info) => {
     },
     raw: true,
   });
+  console.log(members);
   if (members.length !== 2) {
     throw new ApolloError('You have to be part of the team ');
   }

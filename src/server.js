@@ -60,7 +60,7 @@ const server = new GraphQLServer({
 
 server.express.use('/files', express.static('files'));
 
-models.sequelize.sync({}).then(() => {
+models.sequelize.sync({ force: true }).then(() => {
   server.start(
     {
       port: 4000,

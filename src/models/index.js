@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize('slackclone', 'manish', 'pass', {
+const sequelize = new Sequelize('test', 'root', 'mysql', {
   host: process.env.DB_HOST || 'localhost',
   dialect: 'mysql',
   pool: {

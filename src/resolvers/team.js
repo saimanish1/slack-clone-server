@@ -70,10 +70,15 @@ module.exports = {
   },
   Query: {
     async getAllTeamMembers(parent, { teamId }, { models, user }) {
-      const response = await models.User.findAll({
-        include: [{ model: models.Team, where: { id: teamId } }],
-        raw: true,
-      });
+      const response = await models.sequelize.query(
+        'select u.id,u.username from users as u join members as m on m.user_id=u.id where m.team_id = :teamId and m.user_id != :currentUserId',
+        {
+          replacements: { teamId: parseInt(teamId), currentUserId: user },
+          raw: true,
+          model: models.User,
+          mapToModel: true,
+        }
+      );
       return response;
     },
   },
@@ -87,7 +92,7 @@ module.exports = {
     },
     directMessageMembers: async ({ id }, args, { models, user }) => {
       const response = await models.sequelize.query(
-        'select  users.id,users.username from users join direct_messages as dm on (users.id = dm.sender_id) or (users.id = dm.receiver_id) where (:currentUserId = dm.sender_id or :currentUserId = dm.receiver_id) and dm.team_id = :teamId group by users.id',
+        'select  users.id,users.username from users join direct_messages as dm on (users.id = dm.sender_id) or (users.id = dm.receiver_id) where (:currentUserId = dm.sender_id or :currentUserId = dm.receiver_id) and dm.team_id = :teamId and users.id != :currentUserId group by users.id',
         {
           replacements: { currentUserId: user, teamId: id },
           model: models.User,
